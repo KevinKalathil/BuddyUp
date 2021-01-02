@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BuddyUP</title>
+</head>
+<body>
+<h1>Buddy Up</h1>
+
+<form action="/search/" method="post" >{% csrf_token %}
+    <input type="text" name="content1"/>
+    <input type="text" name="content2"/>
+    <input type="submit" value="Submit"/>
+</form>
+
+<iframe width="1520" height="450" frameborder="0" style="border:5"
+src={{url}} allowfullscreen></iframe>
+
+</body>
+</html>
