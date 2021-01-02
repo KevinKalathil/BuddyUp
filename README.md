@@ -8,7 +8,7 @@ We wanted to create something unique that matches the user to another person tha
 The user selects a route to travel and then the user gets matched with other people that will be using the same app and taking the same route.
 
 ## How we built it
-Used Flask for the backend
+Used Django and Flask for the backend
 
 Django, HTML, CSS for the frontend
 
