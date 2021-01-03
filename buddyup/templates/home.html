@@ -31,11 +31,12 @@ src={{url}} allowfullscreen></iframe>
 <ol>
     {% for t_item in transit_items %}
         <li>
-            <span style="float:right">{{t_item.0}}</span>
+            <span style="float:right">{{t_item.5}}</span>
             {{t_item.0}}<br/>
             {{t_item.1}}<br/>
             {{t_item.2}}<br/>
-            {{t_item.3}}
+            {{t_item.3}}<br/>
+            {{t_item.4}}
         </li>
         <br/>
     {% endfor %}

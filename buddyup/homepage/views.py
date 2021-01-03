@@ -19,12 +19,13 @@ end = "Ottawa"
 arrival_time = int(time.time()+600)
 time = arrival_time
 userName=""
+confirmedRoute = []
+matches = [None]*1
 
 from templates.forms import CreateUserForm, LoginUserForm
 
 def register(request):
     form = CreateUserForm()
-    # profile = ExtraUserForm()
     global userName
 
     if request.method == 'POST':
@@ -39,7 +40,6 @@ def register(request):
 
 def loginPage(request):
     form = LoginUserForm()
-    # profile = ExtraUserForm()
 
     if request.method == 'POST':
 
@@ -49,7 +49,8 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
-            global userName
+            global userName, matches
+            matches = [None] * 1
             userName= username
             return HttpResponseRedirect('/homepage/')
 
@@ -58,7 +59,7 @@ def loginPage(request):
 
 def homeView(request):
     context = {}
-    global start, end
+    global start, end, confirmedRoute
     if(start == None or end == None):
         start = "Toronto"
         end = "Ottawa"
@@ -70,10 +71,30 @@ def homeView(request):
     context['start'] = route[0]
     context['end'] = route[1]
     context['transit_items'] = route[2]
+    context['transit_items'] = addMatches(context['transit_items'])
+    confirmedRoute = getTransitStrings(context['transit_items'])
     return render(request, 'home.html', context)
 
+def addMatches(transit_items):
+    for i in range(len(transit_items)):
+        if(matches and i<len(matches)):
+            transit_items[i].append(matches[i])
+        else:
+            transit_items[i].append("NO MATCH")
+
+    return transit_items
+
+def getTransitStrings(transit_items):
+    transitString = ""
+    for i in transit_items:
+        transitString+= i[1]+'_'+i[2]+'_'+i[4]
+        transitString+='$'
+
+    transitString = transitString[:-1]
+    return transitString
+
 def search(request):
-    global start, end, arrival_time, time
+    global start, end, arrival_time, time, matches
     start = request.POST['content1'].replace(" ","+")
     end = request.POST['content2'].replace(" ","+")
     arrival_day = request.POST['day']
@@ -81,35 +102,44 @@ def search(request):
     time = request.POST['time']
     times = time.split(":")
     time = ((int)(times[0]) * 60 + (int)(times[1]))*60
-    time += arrival_day + 25200
-    logger.warning(time)
+    time += arrival_day + 25200 # Convert to EST
+    matches = [None]* len(matches)
+
     return HttpResponseRedirect('/homepage/')
 
 def confirm(request):
     userList = User.objects.values()
     logger.warning(userList)
-    index=0
-    u1 = None
     u1 = User.objects.get(username = userName)
-    # for i in range(len(userList)):
-    #     if(userList[i]["username"]==userName):
-    #         index = i
-    #         u1 = userList[i]
-    #         break
-
-    u1.last_name='1'
-
+    if(u1.last_name==''):
+        u1.last_name = confirmedRoute
+    else:
+        u1.last_name += '$'+confirmedRoute
     u1.save()
-
-    # logger.warning(users)
-    # logger.warning(u1)
-    # logger.warning(u1.email)
-
     return HttpResponseRedirect('/homepage/')
 
 
 def match(request):
-    pass
+    global matches
+    splitconfirmedRoute = confirmedRoute.split("$")
+    userList = User.objects.values()
+    matches = [None]*len(splitconfirmedRoute)
+
+    for i in range(len(userList)):
+        logger.warning(userList[i]['username'])
+        if(userList[i]['username']==userName):
+            continue
+        routes = userList[i]['last_name'].split("$")
+        for j in range(len(routes)):
+            for k in range(len(splitconfirmedRoute)):
+                if routes[j]==splitconfirmedRoute[k] and matches[k]==None:
+                    matches[k] = userList[i]['username']
+                    logger.warning(routes)
+                    logger.warning(splitconfirmedRoute)
+
+    logger.warning(matches)
+
+    return HttpResponseRedirect('/homepage/')
 
 def getRoute(directionurl):
     with urllib.request.urlopen(directionurl) as url:
