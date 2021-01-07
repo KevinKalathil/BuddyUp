@@ -19,10 +19,10 @@ from homepage.views import homeView, search, register, loginPage, confirm, match
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('homepage/', homeView),
+    path('homepage/', homeView, name = 'home'),
     path('search/', search),
-    path('register/', register),
-    path('loginPage/', loginPage),
+    path('', register, name = 'register'),
+    path('loginPage/', loginPage, name = 'login'),
     path('confirm/', confirm),
     path('match/', match),
 ]

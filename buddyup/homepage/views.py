@@ -42,16 +42,17 @@ def loginPage(request):
     form = LoginUserForm()
 
     if request.method == 'POST':
-
         username = request.POST.get('username')
         password1 = request.POST.get('password1')
         user = authenticate(request, username=username, password = password1)
+        logger.warning(user);
 
         if user is not None:
             login(request, user)
             global userName, matches
             matches = [None] * 1
             userName= username
+            logger.warning(userName)
             return HttpResponseRedirect('/homepage/')
 
     context = {'form': form}
@@ -65,12 +66,15 @@ def homeView(request):
         end = "Ottawa"
 
     route = []
-    directionsapi = f"https://maps.googleapis.com/maps/api/directions/json?origin={start}&destination={end}&mode=transit&arrival_time={time}&key={os.environ.get('CLIENT_SECRET')}"
+    directionsapi = f"https://maps.googleapis.com/maps/api/directions/json?origin={start}&destination={end}&mode=transit&arrival_time={time}&key={str(os.environ.get('CLIENT_SECRET'))}"
+    logger.warning(os.environ.get('CLIENT_SECRET'))
     route = getRoute(directionsapi)
     context['url'] = f"https://www.google.com/maps/embed/v1/directions?key={os.environ.get('CLIENT_SECRET')}&origin={start}&destination={end}&mode=transit&avoid=tolls|highways"
     context['start'] = route[0]
     context['end'] = route[1]
+    context['USER'] = userName
     context['transit_items'] = route[2]
+    logger.warning(route)
     context['transit_items'] = addMatches(context['transit_items'])
     confirmedRoute = getTransitStrings(context['transit_items'])
     return render(request, 'home.html', context)
@@ -87,7 +91,8 @@ def addMatches(transit_items):
 def getTransitStrings(transit_items):
     transitString = ""
     for i in transit_items:
-        transitString+= i[1]+'_'+i[2]+'_'+i[4]
+        logger.warning(i)
+        transitString+= str(i[1])+str('_')+str(i[2])+'_'+str(i[4])
         transitString+='$'
 
     transitString = transitString[:-1]
